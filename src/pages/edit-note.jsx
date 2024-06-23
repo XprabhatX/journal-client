@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import ReactQuill from 'react-quill';
@@ -7,6 +7,10 @@ import 'react-quill/dist/quill.snow.css';
 
 export default function EditNote() {
     const navigate = useNavigate();
+    
+    //! get the id from the URL
+    const { id } = useParams();
+
     const [noteContent, setNoteContent] = useState()
     
     useEffect(() => {
@@ -24,6 +28,8 @@ export default function EditNote() {
 
     const handleSubmit = () => {
         console.log(noteContent)
+
+        //? Update the note on the server with the help of the note id and also update the date
     }
 
     return (

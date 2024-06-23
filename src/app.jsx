@@ -7,6 +7,7 @@ import SignUp from "@/pages/signup";
 
 import { Toaster } from "react-hot-toast";
 import AddNote from "./pages/add-note";
+import EditNote from "./pages/edit-note";
 
 function App() {
     return (
@@ -18,7 +19,7 @@ function App() {
                     <Route path="signup" element={<SignUp />} />
             
                     <Route path="/add-new/" element={<AddNote />} />
-                    <Route path="/edit-note/:id" element={<></>} />
+                    <Route path="/edit-note/:id" element={<EditNote />} />
 
                     <Route path="*" element={<Navigate to="/" />} />
                 </Route>
