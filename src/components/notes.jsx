@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
 import {
     Card,
     CardContent,
+    CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
@@ -13,15 +15,24 @@ import {
 import { Edit } from "lucide-react";
 
 export default function Notes() {
-    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayNames = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ];
 
-    const [notes, setNotes] = useState([
+    const [allNotes, setAllNotes] = useState([
         {
             id: 1,
             title: "Note 1",
             description: "This is the first note",
             content: "This is the content of the first note",
-            date: new Date(),
+            date: new Date(2024, 5, 23),
+            tags: ["ehhl"],
             backgroundColor: "bg-blue-500",
         },
         {
@@ -30,6 +41,7 @@ export default function Notes() {
             description: "This is the second note",
             content: "This is the content of the second note",
             date: new Date(),
+            tags: [],
             backgroundColor: "bg-blue-500",
         },
         {
@@ -38,6 +50,7 @@ export default function Notes() {
             description: "This is the third note",
             content: "This is the content of the third note",
             date: new Date(),
+            tags: [],
             backgroundColor: "bg-blue-500",
         },
         {
@@ -46,9 +59,11 @@ export default function Notes() {
             description: "This is the third note",
             content: "This is the content of the third note",
             date: new Date(),
+            tags: [],
             backgroundColor: "bg-rose-500",
         },
     ]);
+    const [filteredNotes, setFilteredNotes] = useState(allNotes);
     const [filter, setFilter] = useState("all");
 
     //? The useEffect will run when the filter changes
@@ -56,7 +71,34 @@ export default function Notes() {
     useEffect(() => {
         //? Fetch notes from the server
         // setNotes([])
-    }, [filter]);
+
+        //? filter the notes based on the current week and month
+
+        const currentDate = new Date();
+        const weekStart = startOfWeek(currentDate);
+        const weekEnd = endOfWeek(currentDate);
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+
+        let newNotes = [];
+        if (filter === "This week") {
+            newNotes = allNotes.filter((note) => {
+                return note.date >= weekStart && note.date <= weekEnd;
+            });
+        } else if (filter === "This month") {
+            newNotes = allNotes.filter((note) => {
+                return note.date >= monthStart && note.date <= monthEnd;
+            });
+        } else if (filter === "This day") {
+            newNotes = allNotes.filter((note) => {
+                return note.date.getDate() === currentDate.getDate();
+            });
+        } else {
+            newNotes = allNotes;
+        }
+
+        setFilteredNotes(newNotes);
+    }, [filter, allNotes]);
 
     const handleFilter = (new_filter) => {
         if (filter === new_filter) {
@@ -113,7 +155,7 @@ export default function Notes() {
             </div>
 
             {/* All Notes */}
-            {notes.length === 0 ? (
+            {filteredNotes.length === 0 ? (
                 <div className="h-full grid place-items-center">
                     <p className="text-gray-500 text-center mt-5">
                         No notes to display
@@ -121,7 +163,7 @@ export default function Notes() {
                 </div>
             ) : (
                 <div className="grid grid-cols-3 gap-4 mt-5">
-                    {notes.map((note, index) => {
+                    {filteredNotes.map((note, index) => {
                         const idx = Math.floor(Math.random() * colors.length);
                         //? day name and time
                         const time = note.date.toTimeString().split(" ")[0];
@@ -146,7 +188,19 @@ export default function Notes() {
                                 <CardContent>
                                     <p>{note.content}</p>
                                 </CardContent>
-                                <CardFooter className="text-black font-bold">
+                                <CardFooter className="text-black font-bold flex flex-col justify-start items-start">
+                                    <CardDescription>
+                                        {note.tags && note.tags.map((tag, index) => {
+                                            return (
+                                                <span
+                                                    key={index}
+                                                    className="bg-green-800 text-white px-2 py-1 rounded-md text-sm"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            );
+                                        })}
+                                    </CardDescription>
                                     <p>{`${time}, ${day}`}</p>
                                 </CardFooter>
                             </Card>
