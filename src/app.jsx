@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Layout from "@/layout";
 import Home from "@/pages/home";
@@ -15,6 +15,11 @@ function App() {
                     <Route index element={<Home />} />
                     <Route path="login" element={<Login />} />
                     <Route path="signup" element={<SignUp />} />
+            
+                    <Route path="/add-new/" element={<></>} />
+                    <Route path="/edit-note/:id" element={<></>} />
+
+                    <Route path="*" element={<Navigate to="/" />} />
                 </Route>
             </Routes>
             <Toaster position="bottom-right" />

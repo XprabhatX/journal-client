@@ -51,7 +51,7 @@ export default function Notes() {
     ]);
     const [filter, setFilter] = useState("all");
 
-    //? The useEffect wuill run when the filter changes
+    //? The useEffect will run when the filter changes
 
     useEffect(() => {
         //? Fetch notes from the server
@@ -138,7 +138,7 @@ export default function Notes() {
                                     <CardTitle className="flex justify-between border-b border-black pb-2">
                                         <span>{note.title}</span>
 
-                                        <Link to={`note/:${note.id}`}>
+                                        <Link to={`edit-note/:${note.id}`}>
                                             <Edit className="cursor-pointer" />
                                         </Link>
                                     </CardTitle>
