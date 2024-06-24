@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "react-hot-toast";
+import axios from "axios";
 
 import {
     Card,
@@ -25,55 +27,38 @@ export default function Notes() {
         "Saturday",
     ];
 
-    const [allNotes, setAllNotes] = useState([
-        {
-            id: 1,
-            title: "Note 1",
-            description: "This is the first note",
-            content: "This is the content of the first note",
-            date: new Date(2024, 5, 23),
-            tags: ["ehhl"],
-            backgroundColor: "bg-blue-500",
-        },
-        {
-            id: 2,
-            title: "Note 2",
-            description: "This is the second note",
-            content: "This is the content of the second note",
-            date: new Date(),
-            tags: [],
-            backgroundColor: "bg-blue-500",
-        },
-        {
-            id: 3,
-            title: "Note 3",
-            description: "This is the third note",
-            content: "This is the content of the third note",
-            date: new Date(),
-            tags: [],
-            backgroundColor: "bg-blue-500",
-        },
-        {
-            id: 4,
-            title: "Note 3",
-            description: "This is the third note",
-            content: "This is the content of the third note",
-            date: new Date(),
-            tags: [],
-            backgroundColor: "bg-rose-500",
-        },
-    ]);
-    const [filteredNotes, setFilteredNotes] = useState(allNotes);
+    const [allNotes, setAllNotes] = useState([]);
+    const [filteredNotes, setFilteredNotes] = useState([]);
     const [filter, setFilter] = useState("all");
 
-    //? The useEffect will run when the filter changes
-
+    // Fetch notes from the server when the component mounts
     useEffect(() => {
-        //? Fetch notes from the server
-        // setNotes([])
+        const fetchNotes = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await axios.get("http://localhost:8080/journal/read", {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Send the token in the request headers
+                    },
+                });
+                const fetchedNotes = response.data.journals.map(note => ({
+                    ...note,
+                    date: new Date(note.date),
+                }));
+                setAllNotes(fetchedNotes);
+                setFilteredNotes(fetchedNotes);
+            } catch (error) {
+                toast.error("Failed to fetch notes");
+                console.error("Error fetching notes:", error);
+            }
+        };
 
-        //? filter the notes based on the current week and month
 
+        fetchNotes();
+    }, []);
+
+    // Update filtered notes based on the filter
+    useEffect(() => {
         const currentDate = new Date();
         const weekStart = startOfWeek(currentDate);
         const weekEnd = endOfWeek(currentDate);
@@ -82,17 +67,11 @@ export default function Notes() {
 
         let newNotes = [];
         if (filter === "This week") {
-            newNotes = allNotes.filter((note) => {
-                return note.date >= weekStart && note.date <= weekEnd;
-            });
+            newNotes = allNotes.filter(note => note.date >= weekStart && note.date <= weekEnd);
         } else if (filter === "This month") {
-            newNotes = allNotes.filter((note) => {
-                return note.date >= monthStart && note.date <= monthEnd;
-            });
+            newNotes = allNotes.filter(note => note.date >= monthStart && note.date <= monthEnd);
         } else if (filter === "This day") {
-            newNotes = allNotes.filter((note) => {
-                return note.date.getDate() === currentDate.getDate();
-            });
+            newNotes = allNotes.filter(note => note.date.getDate() === currentDate.getDate());
         } else {
             newNotes = allNotes;
         }
@@ -100,7 +79,7 @@ export default function Notes() {
         setFilteredNotes(newNotes);
     }, [filter, allNotes]);
 
-    const handleFilter = (new_filter) => {
+    const handleFilter = new_filter => {
         if (filter === new_filter) {
             setFilter("all");
         } else {
@@ -180,7 +159,7 @@ export default function Notes() {
                                     <CardTitle className="flex justify-between border-b border-black pb-2">
                                         <span>{note.title}</span>
 
-                                        <Link to={`edit-note/:${note.id}`}>
+                                        <Link to={`edit-note/${note._id}`}>
                                             <Edit className="cursor-pointer" />
                                         </Link>
                                     </CardTitle>
@@ -188,20 +167,25 @@ export default function Notes() {
                                 <CardContent>
                                     <p>{note.content}</p>
                                 </CardContent>
+                                <CardContent>
+                                    <p><span className="bg-yellow-600 text-white px-2 py-1 rounded-md text-sm me-2">
+                                        Mood: {note.sentiment}    
+                                    </span></p>
+                                </CardContent>
                                 <CardFooter className="text-black font-bold flex flex-col justify-start items-start">
                                     <CardDescription>
                                         {note.tags && note.tags.map((tag, index) => {
                                             return (
                                                 <span
                                                     key={index}
-                                                    className="bg-green-800 text-white px-2 py-1 rounded-md text-sm"
+                                                    className="bg-green-800 text-white px-2 py-1 rounded-md text-sm me-2"
                                                 >
                                                     {tag}
                                                 </span>
                                             );
                                         })}
                                     </CardDescription>
-                                    <p>{`${time}, ${day}`}</p>
+                                    {/* {<p>{`${time}, ${day}`}</p>} */}
                                 </CardFooter>
                             </Card>
                         );

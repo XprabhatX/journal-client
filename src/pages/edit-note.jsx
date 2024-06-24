@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
 export default function EditNote() {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function EditNote() {
 
     //! get the id from the URL
     const { id } = useParams();
+    console.log(id)
 
     const [noteContent, setNoteContent] = useState();
 
@@ -25,17 +27,54 @@ export default function EditNote() {
     }, [navigate]);
 
     useEffect(() => {
-        //? Fetch note from the server
-        //TODO setTags(data.tags.map(tag => tag.name).join(", "))
-        //TODO setTitle(data.title)
+        const fetchJournal = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get(`http://localhost:8080/journal/read/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const data = response.data.journal;
+                setTitle(data.title);
+                setNoteContent(data.content);
+                setTags(data.tags.join(", "));
+            } catch (error) {
+                console.error("Error fetching journal:", error);
+            }
+        };
+
+        fetchJournal();
+
     }, []);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         console.log(noteContent);
-
+    
         const allTags = tags.split(",").map((tag) => tag.trim());
-
-        //? Update the note on the server with the help of the note id and also update the date
+    
+        try {
+            const token = localStorage.getItem("token");
+    
+            const response = await axios.put(`http://localhost:8080/journal/update`, {
+                journalId: id,
+                title: title,
+                content: noteContent,
+                tags: allTags,
+                date: new Date()
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            if (response.status === 200) {
+                console.log("Note updated successfully");
+                navigate("/");
+            }
+        } catch (error) {
+            console.error("Error updating note:", error);
+        }
     };
 
     return (
