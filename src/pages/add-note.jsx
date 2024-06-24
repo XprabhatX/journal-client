@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
+import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 
 export default function AddNote() {
     const navigate = useNavigate();
-    const [noteContent, setNoteContent] = useState();
+    const [noteContent, setNoteContent] = useState("");
     const [tags, setTags] = useState("");
     const [title, setTitle] = useState("");
 
@@ -16,20 +17,31 @@ export default function AddNote() {
         const token = localStorage.getItem("token");
 
         if (!token) {
-            // navigate('/login');
+            navigate('/login');
         }
     }, [navigate]);
 
-    useEffect(() => {
-        //? Fetch note from the server
-        //TODO setTags(data.tags.map(tag => tag.name).join(", "))
-        //TODO setTitle(data.title)
-    }, []);
-
-    const handleSubmit = () => {
-        console.log(noteContent);
-
+    const handleSubmit = async () => {
+        const token = localStorage.getItem("token");
         const allTags = tags.split(",").map((tag) => tag.trim());
+
+        try {
+            await axios.post("http://localhost:8080/journal/create", {
+                title,
+                content: noteContent,
+                tags: allTags,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            toast.success("Note added successfully");
+            navigate("/");
+        } catch (error) {
+            toast.error("Failed to add note");
+            console.error("Error adding note:", error);
+        }
     };
 
     return (

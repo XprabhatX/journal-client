@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 
@@ -14,27 +14,32 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const SignUpForm = () => {
+const EditForm = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        navigate("/login")
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const response = await axios.post("http://localhost:8080/user/signup", {
+            const response = await axios.put("http://localhost:8080/user/update", {
                 name,
                 email,
                 password,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
-
-            if (response.data.message === "success") {
-                localStorage.setItem("token", response.data.token)
-
-            } else {
-                toast.error(response.data.message);
-                window.location.href = "/"
+            if (response.status == 200) {
+                navigate("/")
             }
         } catch (error) {
             toast.error("Error signing up. Please try again.");
@@ -45,9 +50,9 @@ const SignUpForm = () => {
         <main className="flex flex-col justify-center items-center min-h-screen">
             <Card className="mx-auto max-w-sm">
                 <CardHeader>
-                    <CardTitle className="text-xl">Sign Up</CardTitle>
+                    <CardTitle className="text-xl">Edit Profile</CardTitle>
                     <CardDescription>
-                        Enter your information to create an account
+                        Enter your information to update your account
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -67,17 +72,6 @@ const SignUpForm = () => {
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="m@example.com"
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
                                 <Label htmlFor="password">Password</Label>
                                 <Input
                                     id="password"
@@ -88,20 +82,14 @@ const SignUpForm = () => {
                                 />
                             </div>
                             <Button type="submit" className="w-full">
-                                Create an account
+                                Update your account
                             </Button>
                         </div>
                     </form>
-                    <div className="mt-4 text-center text-sm">
-                        Already have an account?{" "}
-                        <Link to="/login" className="underline">
-                            Sign in
-                        </Link>
-                    </div>
                 </CardContent>
             </Card>
         </main>
     );
 };
 
-export default SignUpForm;
+export default EditForm;
