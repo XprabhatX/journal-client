@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import parse from 'html-react-parser';
 
 import {
     Card,
@@ -165,7 +166,7 @@ export default function Notes() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p>{note.content}</p>
+                                    <p>{parse(note.content)}</p>
                                 </CardContent>
                                 <CardContent>
                                     <p><span className="bg-yellow-600 text-white px-2 py-1 rounded-md text-sm me-2">
