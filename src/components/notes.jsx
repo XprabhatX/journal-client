@@ -15,7 +15,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Edit } from "lucide-react";
+import { Edit, Delete } from "lucide-react";
 
 export default function Notes() {
     const dayNames = [
@@ -101,6 +101,27 @@ export default function Notes() {
         "bg-rose-500",
     ];
 
+    const handleDelete = async (_id) => {
+        const token = localStorage.getItem("token");
+        console.log("token", _id);
+        console.log("token", token);
+        try {
+            await axios.delete(`http://localhost:8080/journal/delete`, {
+                journalId: _id
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            toast.success("Note delete successfully");
+            navigate("/");
+        } catch (error) {
+            toast.error("Failed to delete note");
+            console.error("Error deleting note:", error);
+        }
+    };
+
     return (
         <div className="w-full">
             {/* Filters */}
@@ -160,9 +181,10 @@ export default function Notes() {
                                     <CardTitle className="flex justify-between border-b border-black pb-2">
                                         <span>{note.title}</span>
 
-                                        <Link to={`edit-note/${note._id}`}>
+                                        <Link to={`edit-note/${note._id}`} className="flex flex-row gap-2">
                                             <Edit className="cursor-pointer" />
                                         </Link>
+                                        <Delete onClick={() => handleDelete(note._id)} className="cursor-pointer"/>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
